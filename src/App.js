@@ -12,7 +12,7 @@ const socket = io();
 function App() {
 
   useEffect(() => {
-    fetch('/search?q=proxy')
+    fetch('')
       .then(resp => {
         console.log(resp);
         console.log('======success=======');
@@ -24,6 +24,8 @@ function App() {
   }, [])
 
   const [isInRoom, setInRoom] = useState(false);
+  const [roomId, setRoomId] = useState(-1);
+  
   
   useEffect(() => {
     socket.on('connection', () => {
@@ -35,13 +37,16 @@ function App() {
     });
 
     /*******  Waiting Game Part  ********/
-    socket.on("roomCreated", (room) => {
-      console.log(`Created room ${room}`);
-      setInRoom(room);
+    socket.on("roomCreated", (data) => {
+      console.log(`Created room ${data.roomId}`);
+      setRoomId(data.roomId);
+      setInRoom(data.inRoom);
     });
 
-    socket.on("allReady", (room) => {
-      console.log(`All Ready in room ${room}, Game start`);
+    socket.on("allReady", (data) => {
+      console.log(`All Ready in room ${data.room}, Game start`);
+      setRoomId(data.roomId);
+      setInRoom(data.inRoom);
     });
 
     socket.on("roomFull", () => {
@@ -86,7 +91,7 @@ function App() {
       ))} */}      
       
       {isInRoom ? (
-        <GameScreen Room={isInRoom} Socket = {socket}/>
+        <GameScreen Room={roomId} socket = {socket}/>
       ) : (
         <LoadingScreen onCreateGame={handleCreateGame} onJoinRoom={handleJoinRoom} />
       )}
