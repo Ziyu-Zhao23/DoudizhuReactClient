@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Card from './Card';
+import { Col, Row } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Space } from 'antd';
+import { isBeat } from './CardRule';
 
-import one from './assets/1.png'
-
-export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
+export default function GameScreen({ Room, socket}) {
 
   //initialize game state
   const [isTurn, setTurn] = useState(false);
@@ -12,8 +14,8 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
   const [bottomCards, setBottomCards] = useState([]);
   const [handList,setHandList] = useState([]);
   const [lastPlayedCategory,setLastPlayedCategory] = useState([]);
+  const [lastPlayedPlayer,setLastPlayedPlayer] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
-  //const [playingCards] = useState([]);
   
   const [player2Id,setPlayer2Id] = useState(-1);  
   const [player2HandLength,setPlayer2HandLength] = useState(0);
@@ -30,7 +32,12 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
     isTurn,
     isLandlord,
     handList,
-    selectedCards
+    lastPlayedCategory,
+    selectedCards,
+    player2Id,
+    player2HandLength,
+    player3Id,
+    player3HandLength
   })
 
 
@@ -42,12 +49,15 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
     });
   };
 
+
+
   //press play Button
   const handlePlayCards = () => {
-    if(beat()){
-      sendToSever('playhand', { 
-        msg:"played Hand(pass_turn)",
-        playedcards: selectedCards });
+    if(lastPlayedCategory.length === 0 ||
+    isBeat(lastPlayedCategory, selectedCards)){
+        sendToSever('playhand', { 
+          msg:"played Hand(pass_turn)",
+          playedcards: selectedCards });
     }
     else alert("Error category, try again");
   };
@@ -56,12 +66,19 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
   const handleDontPlay = () =>{
     sendToSever("dontplay",{
       msg:"Don't playHand(pass_turn)"});
-  }       
+  }  
+  
+  const handleLeaveGame = () =>{
+    socket.emit('leaveGame',{
+      roomId:Room,
+      //socket:socket
+    });
+  };
 
   //click a card
   const handleCardClick = cardId => {
       
-    /* if (selectedCards.includes(cardId)) {
+    if (selectedCards.includes(cardId)) {
       //callback funtion
       //log the updated state immediately after updating it
       setSelectedCards(prevArray =>{
@@ -79,20 +96,10 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
         }
         return newArray;
       });
-    } */
-    if (selectedCards.includes(cardId)) {
-      setSelectedCards(selectedCards.filter(c => c !== cardId));
-      //console.log(`remove card ${cardId} from Selected Card List ${selectedCards} `);
     }
-    else{
-      setSelectedCards([...selectedCards, cardId])
-      //console.log(`add card ${cardId} to Selected Card List ${selectedCards} `);
-    }
-
-    //console.log(selectedCards);
   };
 
-  useEffect(() => {
+  /* useEffect(() => {
     console.log(`Current handlist ${handList}`);
   },[handList]);
 
@@ -118,10 +125,153 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
 
   useEffect(() => {
     
-  },[timeDisplay]);
+  },[timeDisplay]); */
+
+  useEffect(() => {
+    function onRespond(res) {
+      const { data, type } = res;
+      // eslint-disable-next-line default-case
+      switch (type) {
+        case "startgame":
+          alert(data.msg);
+          setHandList(data.cardlist);
+          //!!!cleanShowedCards(); 
+          
+          setPlayer2Id(data.nextplayer1Id);
+          setPlayer2HandLength(data.nextplayer1length);
+          setPlayer3Id(data.nextplayer2Id);
+          setPlayer3HandLength(data.nextplayer2length);
+          console.log(data.nextplayer1Id);
+          console.log(data.nextplayer2Id);  
+          break;
+        case "setlandlord":
+          setResultText(data.msg + " You turn");
+
+          setLandlord(data.landlord);
+          setTurn(data.turn);
+          break;
+        case "showbottomcards":
+          setBottomCards(data.bottomcards);
+          break;
+        case "addbottomcards":
+          setHandList(data.cardlist);
+          //cleanShowedCards();          
+          setPlayer2HandLength(data.nextplayer1length);
+          setPlayer3HandLength(data.nextplayer2length);
+          break;
+        case "yourturn":
+          console.log("yourTurn" + data.turn);
+          setResultText("Your turn");
+          setTurn(data.turn);
+
+          //setDisablePlayBtn(false);
+          break;
+        case "sucessplay":
+          console.log(" sucess play " + data.cardlist);
+          setResultText(data.msg);
+          setLastPlayedCategory(data.cardlist);
+          setLastPlayedPlayer([]);
+
+          //romve played cards    
+          setHandList(preHand =>{
+            const newHand = preHand.filter((cardId) => !data.cardlist.includes(cardId));
+            console.log(`current hand ${newHand}`);
+            return newHand;
+          })
+
+          setSelectedCards([]);
+          setTurn(data.turn);
+          break;
+        case "win":
+          alert(data.msg);
+          setTurn(true);
+          handleLeaveGame();
+          break;
+        case "defeat":
+          alert(data.msg);
+          setTurn(true);
+          handleLeaveGame();
+          break;
+        case "error":
+          alert(data.msg);
+          setSelectedCards([]);
+          break;
+      }
+    }
+
+    function onRespondToAllButMe(res) {
+      const { data, type } = res;
+      // eslint-disable-next-line default-case
+      switch (type) {
+        case "setfarmer":
+          setResultText(data.msg);
+          setLandlord(data.landlord);
+          setTurn(data.turn);
+          break;
+        case "otherturn":
+          console.log("other Trun");
+          setResultText(`Player ${data.playerid} Turn`);
+          setTurn(data.turn);
+          //setDisablePlayBtn(true);
+          break;
+        case "otherplayed":
+          console.log(`player ${data.otherplayer} plays ${data.cardlist}`);
+          setResultText(`player ${data.otherplayer} plays ${data.cardlist}`);
+          setLastPlayedCategory(data.cardlist);
+          setLastPlayedPlayer(data.otherplayer);
+
+          console.log(data.handlength,player2Id,player3Id);
+          
+          console.log(player2Id === data.otherplayer);
+          console.log(player3Id === data.otherplayer);
+
+          if(player2Id === data.otherplayer){
+            console.log("delete player index 2 cards");
+            console.log(lastPlayedCategory);
+            //setPlayer2HandLength((prevLength) => prevLength - data.cardlist.length);
+            setPlayer2HandLength(data.handlength);
+          }
+          else if(player3Id === data.otherplayer){
+            console.log("delete player index 3 cards");
+            console.log(lastPlayedCategory);
+            //setPlayer3HandLength((prevLength) => prevLength - data.cardlist.length);
+            setPlayer3HandLength(data.handlength);
+          }
+          break;
+      }
+    }
+
+    function onRespondToAll(res){
+      const { data, type } = res;
+      // eslint-disable-next-line default-case
+      switch (type) {
+        case "emptyPlayedCategory":
+          setLastPlayedCategory([]);
+          setLastPlayedPlayer([])
+          break;
+      }
+    }
+
+    function onUpdateTimer(remainingTime){
+      setTime(remainingTime);
+    }
+
+    socket.on('respond', onRespond);
+    socket.on('respondtoallbutme', onRespondToAllButMe);
+    socket.on('respondtoall', onRespondToAll);
+    socket.on("updatetimer", onUpdateTimer);
+
+    return () => {
+      socket.off('respond', onRespond);
+      socket.off('respondtoallbutme', onRespondToAllButMe);
+      socket.off('respondtoall', onRespondToAll);
+      socket.off('disconnect', onRespondToAllButMe);
+      socket.off("updatetimer", onUpdateTimer);
+    };
+  }, [socket,player2Id,player3Id,lastPlayedCategory,handleLeaveGame]);
 
   /* socket part */
-  useEffect(() => {
+  /* useEffect(() => {
 
     socket.on("updatetimer", (remainingTime) => {
       setTime(remainingTime);
@@ -140,8 +290,8 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
           setPlayer2HandLength(data.nextplayer1length);
           setPlayer3Id(data.nextplayer2Id);
           setPlayer3HandLength(data.nextplayer2length);
-/*           console.log(player2HandLength);
-          console.log(player3HandLength);  */ 
+          // console.log(player2HandLength);
+          //console.log(player3HandLength);  
           break;
         case "setlandlord":
           setResultText(data.msg + " You turn");
@@ -217,83 +367,113 @@ export default function GameScreen({ Room, socket/* , onPlayCards  */}) {
 
       }
     });
-  }, [socket]);
-
-  const beat = function(){
-    return true;
-  };
+  }, [socket]); */
 
   return (
+
     <div className='game-scrren'>
       {/* <img src={require('../assets/logo.png').default} /> */}
-      <h1>Room {Room}</h1>
-      <div id="bottomCards" className="showedCards" style={{pointerEvents: 'none'}}>
-      <p className='showedCardsText'>bottom Cards</p>
-          {bottomCards && bottomCards.map((id) => (
-            <Card 
-              key={id} 
-              card = {id}
-            />
-          ))}
-      </div>
+      <Row>
+      <Col span={3}>
+        <h1>Room {Room}</h1>
+      </Col>
+      <Col span={12}>
+        <div id="bottomCards" className="showedCards" style={{pointerEvents: 'none'}}>
+        <p className='showedCardsText'>bottom Cards</p>
+            {bottomCards && bottomCards.map((id) => (
+              <Card 
+                key={id} 
+                card = {id}
+              />
+            ))}
+        </div>        
+      </Col>
+      <Col span={3} offset={6}>
+        <button id="leaveButton" className='Buttons' onClick={()=>handleLeaveGame()}>
+            Leave Game
+        </button>
+      </Col>        
+      </Row>
+      <Row>
+        <Col span={2}>
+          <Avatar  size="large" style={{ backgroundColor: '#1890ff' }}>
+            {player3Id}
+          </Avatar>
+        </Col>
+        <Col span={2}>
+          <div id = "player3Hands" className="HandLengthText">
+          {player3HandLength}
+          </div>
+        </Col>
+        <Col span={16}>
+          <div id="playedCards" className="showedCards" style={{pointerEvents: 'none'}}>
+          <p className='showedCardsText'>Last Played Category: Player {lastPlayedPlayer}</p>
+            {lastPlayedCategory && lastPlayedCategory.map((id) => (
+              <Card 
+                key={id} 
+                card = {id}
+              />
+            ))}
+          </div>
+        </Col>
+        <Col span={2}>
+          <Avatar size="large" style={{ backgroundColor: '#1890ff' }}>
+            {player2Id}
+          </Avatar>
+        </Col>
+        <Col span={2}>
+          <div id ="player2Hands" className="HandLengthText" >
+          {player2HandLength}
+          </div>
+        </Col>
+      </Row>
+      <Row>        
+        <Col span={8} offset={8}>
+          <div id="timeDisplay" className="NoticeText">{timeDisplay}</div>     
+        </Col>        
+      </Row>
+      <Row>        
+        <Col span={8} offset={8}>
+          <div id ="resultText" className="NoticeText">{resultText}</div>     
+        </Col>        
+      </Row>
+      <Row>
+        <Col span={12} offset={6}>
+          <div className="buttons">         
+            <button id="playHandButton" onClick={()=>handlePlayCards()} disabled={!isTurn}/*disabledPlayBtn*/ className="Buttons">
+              Play Hand
+            </button>
+            <button id="donotPlayButton" onClick={()=>handleDontPlay()} disabled={!isTurn} className="Buttons">
+              Don't play
+            </button>           
+          </div>
+        </Col>       
+      </Row>
+      <Row>        
+        <Col span={2}>
+          <Avatar size="large" style={{ backgroundColor: '#1890ff' }} icon={<UserOutlined />} />
+        </Col>
+        <Col span={22}>
+          <div id="player1Hands" className="hand">
+            <p className='player1DeckText'>Your hand</p>
+              {handList.map((id) => (
+              <Card 
+                key={id} 
+                card = {id}
+                isSelected = {selectedCards.includes(id)}
+                onClick = {handleCardClick}
+              />
+              ))}
+          </div>
+        </Col>
 
-      <Card 
+      </Row>
+
+      {/* <Card 
         key={0} 
         card = {0}
-      />
-
-      <div id="player1Hands" className="hand">
-        <p className='player1DeckText'>Your hand</p>
-        {handList.map((id) => (
-          <Card 
-            key={id} 
-            card = {id}
-            isSelected = {selectedCards.includes(id)}
-            onClick = {handleCardClick}
-          />
-        ))}
-      </div>
-
-      <div id ="player2Hands" className="backhand" >
-        {player2HandLength}
-      </div>
-
-      <div id = "player3Hands" className="backhand" style={{pointerEvents: 'none'}}>
-        {player3HandLength}
-      </div>
-      
-      <div id ="resultText" className="text">{resultText}</div>
-      <div id="timeDisplay" className="text">{timeDisplay}</div>
-      
-      <div id="playedCards" className="showedCards" style={{pointerEvents: 'none'}}>
-        <p className='showedCardsText'>Last Played Category</p>
-          {lastPlayedCategory && lastPlayedCategory.map((id) => (
-            <Card 
-              key={id} 
-              card = {id}
-            />
-          ))}
-      </div>
-
-      <div className="buttons">         
-          <button id="playHandButton" onClick={()=>handlePlayCards()} disabled={!isTurn}/*disabledPlayBtn*/>
-            Play Hand
-          </button>
-          <button id="donotPlayButton" onClick={()=>handleDontPlay()} disabled={!isTurn}>
-            Don't play
-          </button>
-          <button id="leaveButton">
-            Leave Game
-          </button>
-      </div>
-
-      <div>
-        {/* gameState.currentPlayerCards.map(card => (
-          <div key={card} onClick={() => handleCardClick(card)}>
-            {card} {selectedCards.includes(card) && '(selected)'}
-          </div>
-        )) */}
-      </div>
+      /> */}
+ 
       
     </div>
   );

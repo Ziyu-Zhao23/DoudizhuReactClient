@@ -2,28 +2,84 @@
   text-align: center;
 }
 
-.Loadpage {
-  /* background-image: url('./assets/Landing-Page.gif');
-  background-size: cover; */
+.text {
+  font-size: 1rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  /* Align text to the left */
+  text-align: left;
+}
+
+/* Adjust font size based on window width */
+@media (max-width: 1200px) {
+  .test {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .test {
+    font-size: 0.6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .test {
+    font-size: 0.4px;
+  }
+}
+
+.LobbyPage {
+  background-image: url('./assets/Lobbybackgroung.jpg');
+  background-size: cover;
   margin: 0;
   height: 100vh;
+  /* Set padding-left to move content to the right */
+  padding-left: 300px;
+
 }
 
-.loadpage-join {
+.LobbyPage>h1 {
+  margin-bottom: 10vh;
+  margin: 0 30px;
+  font-size: 5rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.lobbypage-join {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
 }
 
-.loadpage-join>input {
+.lobbypage-join>input {
   font-size: 15px;
   width: 150px;
-  line-height: 1.5em;
+  height: 1.5em;
 }
+
+.game-scrren{
+  background-image: url('./assets/gamebackground.jpg');
+
+  /* Set the background size to cover the entire element */
+  background-size: cover;
+
+  /* Set the background position to center */
+  background-position: center;
+
+  /* Set the element height and width */
+   height: 100vh;
+  /*width: 100vw; */
+}
+
 /* Cards */
 .Card{
   position: relative; /* Set position to relative so we can use top property */
-  width: 200px; 
-  height: 300px; 
+  width: 100px; 
+  height: 150px; 
   cursor: pointer;
 }
 
@@ -41,7 +97,7 @@
 }
 
 .Card.selected {
-  transform: translate(0,-50px) scale(1.1);
+  transform: translate(0,-40px) scale(1.1);
   /* top: -20px; */ /* Move the card up when it is selected */
 }
 
@@ -51,7 +107,48 @@
   flex-direction: row;
   align-items: center;
 }
+/* /webkit-text-stroke-width:2px
+color */
+.hand{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  -webkit-text-stroke-width:2px;
+  -webkit-text-stroke-color: white;
+}
 
+.showedCards{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.showedCardsText{
+  font-size: 1rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  text-align: left;
+}
+
+.player1DeckText{
+  font-size: 1rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  text-align: left;
+}
+
+.NoticeText{
+  font-size: 1rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  text-align: center;
+}
+
+.HandLengthText{
+  font-size: 3rem;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  text-align: left;
+}
 /* .player1Hands>img {
   transition: transform 350ms;
 } */
@@ -90,6 +187,20 @@
 .Buttons:hover {
   top:2px;
   box-shadow: 0 4px 0 #266b91, 0 6px 1px 1px rgba(0,0,0,.3), 0 8px 0 5px #12517d, 0 10px 0 5px #1a6b9a, 0 13px 0 5px #0c405e, 0 13px 1px 6px rgba(0,0,0,.3);
+}
+
+.Buttons:disabled {
+  background: repeating-linear-gradient( 45deg, #fd0202, #fb0202 5px, #f44545 5px, #f44545 10px);
+  box-shadow: 0 4px 0 #91262b, 0 6px 1px 1px rgba(0,0,0,.3), 0 8px 0 5px #7d1212, 0 10px 0 5px #9a1a1a, 0 13px 0 5px #5e0c0c, 0 13px 1px 6px rgba(0,0,0,.3);
+  border-bottom: 3px solid rgba(146, 16, 16, 0.5);
+  cursor: not-allowed;
+}
+
+.Buttons:disabled:hover {
+   /* Remove the hover effect when the button is disabled */
+  background: repeating-linear-gradient( 45deg, #fd0202, #fb0202 5px, #f44545 5px, #f44545 10px);
+  box-shadow: 0 4px 0 #91262b, 0 6px 1px 1px rgba(0,0,0,.3), 0 8px 0 5px #7d1212, 0 10px 0 5px #9a1a1a, 0 13px 0 5px #5e0c0c, 0 13px 1px 6px rgba(0,0,0,.3);
+  border-bottom: 3px solid rgba(146, 16, 16, 0.5);
 }
 
 .Buttons::before {

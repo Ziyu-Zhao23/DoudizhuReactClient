@@ -53,14 +53,22 @@ import S2 from './assets/48.png'
 import H2 from './assets/49.png'
 import C2 from './assets/50.png'
 import D2 from './assets/51.png'
-import Bj from './assets/52.png'
+import Bwj from './assets/52.png'
 import Cj from './assets/53.png'
 
 export default function Card({card, isSelected, onClick}){
     
 
     function idConvertWord(){
-        return (getSuit(card)+getPoint(card));
+        if(card === 52){
+            return "Bwj";
+        }
+        else if(card === 53){
+            return "Cj";
+        }
+        else{
+            return (getSuit(card)+getPoint(card));
+        }       
     }
     const word = idConvertWord();
 
@@ -79,7 +87,7 @@ export default function Card({card, isSelected, onClick}){
         "SK": SK, "HK":HK, "CK":CK, "DK":DK,
         "SA": SA, "HA":HA, "CA":CA, "DA":DA,
         "S2": S2, "H2": H2, "C2": C2, "D2": D2,
-        "Bwj": Bj,
+        "Bwj": Bwj,
         "Cj": Cj,
     };
     const imageSrc = wordImageMap[word];
@@ -112,9 +120,9 @@ export default function Card({card, isSelected, onClick}){
                 src={imageSrc}/* {require(`./assets/${card}.png`).default} */
                 onClick={handleCardClick}
                 />
-                <img alt='card back'
+                {/* <img alt='card back'
                 className="back"
-                src={back}/>
+                src={back}/> */}
             </div> 
         </div>
     )
