@@ -46,6 +46,8 @@
   font-family: Arial, sans-serif;
   font-weight: bold;
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  -webkit-text-stroke-width:2px;
+  -webkit-text-stroke-color: white;
 }
 
 .lobbypage-join {
@@ -113,8 +115,6 @@ color */
   display: flex;
   flex-direction: row;
   align-items: center;
-  -webkit-text-stroke-width:2px;
-  -webkit-text-stroke-color: white;
 }
 
 .showedCards{

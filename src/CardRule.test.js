@@ -12,10 +12,10 @@ const TrioChainWithSingles = [20,21,22,24,25,26,0,8];//888999 3,5
 const TrioChainWithSingles2 = [16,17,18,20,21,22,0,8];//777888 3,5
 const Wrong1TrioChainWithSingles = [16,17,18,24,25,26,1,5]//777999 12
 const Wrong2TrioChainWithSingles = [12,13,14,20,21,22,24,25,26,0,8,32];//666 888999 3,5,j
-const Wrong3TrioChainWithSingles = [16,17,18,20,21,22,24,25,26,0,8,32];//777888999 3,5
+const Wrong3TrioChainWithSingles = [16,17,18,20,21,22,24,25,26,0,8];//777888999 3,5
 const TrioChainWithPairs = [20,21,22,24,25,26,0,1,8,9]//888999 3355
 const TrioChainWithPairs2 = [16,17,18,20,21,22,24,25,26,0,1,8,9,12,13]//777888999 335566
-const Wrong1TrioChainWithPairs = [12,13,14,20,21,22,24,25,26,0,1,8,9,12,13]//666888999 335566
+const Wrong1TrioChainWithPairs = [12,13,14,20,21,22,24,25,26,0,1,8,9,36,37]//666888999 3355kk
 
 const boom = [28,29,30,31]; //10
 const rocket = [52,53];

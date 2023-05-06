@@ -22,10 +22,9 @@ function countFreq(fromHand){
         }
     });
 
-
     var allDicItems = dictionary.getDictionaryItems();
     var maxFreq = 0;  //maximum number of times the same value
-    var maxFreqValue = 0; //value of the card with the most counts
+    var maxFreqValue = 0; //value of the card with the most occurrences
 
     //get the max Frequncy and the value in this dictionary
     for(let value in allDicItems){
@@ -214,9 +213,30 @@ export function getCategory(fromHand){
             return false;
         }
         else if(hlength >=6 && hlength<=16){
+            // get all ranks of trios, single, and pair
+            let trioValue = [];
+            let singleValue = [];
+            let pairValue = [];
+            for(let key in allDicItems){
+                if(allDicItems[key] === 3){
+                    trioValue.push(key);
+                }
+                else if(allDicItems[key] === 1){
+                    singleValue.push(key);
+                }
+                
+                else if(allDicItems[key]=== 2){
+                    pairValue.push(key);
+                }
+                //else return false;
+            }
+
+            //console.log(JSON.stringify(trioValue),JSON.stringify(singleValue),JSON.stringify(pairValue));
+            //console.log(singleValue.length===0);
 
             //Trio Chain  3*n
-            if(hlength % 3 === 0){
+            if(hlength % 3 === 0 && singleValue.length===0 
+                    && pairValue.length === 0){
                 console.log("TrioChain");
 
                 //smallest value is 3, greatest is 14(A)
@@ -227,15 +247,7 @@ export function getCategory(fromHand){
                 else if (valuelist[0] < 3){
                     console.log("No card less than 3");
                     return false;
-                }
-                
-                // check if all are Trio
-                for(let key in allDicItems){
-                    if(allDicItems[key] !== 3){
-                        console.log("Not all trio");
-                        return false;
-                    }
-                }
+                }                
 
                 //get what value in array
                 let keys = Object.keys(allDicItems);
@@ -264,26 +276,11 @@ export function getCategory(fromHand){
                 };
             }
             //Trio Chain With Singles (3+1)*n
-            else if(hlength % 4 === 0){
+            else if(hlength % 4 === 0 && pairValue.length ===0 
+                    && singleValue.length>0){
                 console.log("TrioChainWithSingles");
                 /* There is no rank of single is same as rank of Trio
-                    if it is, the maxFreq should be 4 */
-                
-                // get all ranks of trios and single
-                let trioValue = [];
-                var singleValue = [];
-                for(let key in allDicItems){
-                    if(allDicItems[key] === 3){
-                        trioValue.push(key);
-                    }
-                    else if(allDicItems[key] === 1){
-                        singleValue.push(key);
-                    }
-                    //!!!additional Single cards with the same value 
-                    else if(allDicItems[key]=== 2){
-                        return false;
-                    }
-                }
+                    if it is, the maxFreq should be 4 */                          
 
                 //sort make sure it's ordered
                 trioValue.sort((a,b) => Number(a)-Number(b));
@@ -318,27 +315,16 @@ export function getCategory(fromHand){
                 else return false;
             }
             //Trio Chain With Pairs (3+2)*n
-            else if(hlength % 5 === 0){
-                console.log("TrioChainWithPairs");
-
-                let trioValue = [];    
-                let pairValue = [];    
-                for(let key in allDicItems){
-                    if(allDicItems[key] === 3){
-                        trioValue.push(key);
-                    }
-                    else if(allDicItems[key] === 2){
-                        pairValue.push(key);
-                        
-                    }
-                    else return false;
-                }
+            else if(hlength % 5 === 0 && pairValue.length > 0){
+                console.log("TrioChainWithPairs");               
 
                 //sort make sure it's ordered
                 trioValue.sort((a,b) => Number(a)-Number(b));
 
-                //pairs with the same amount of trios
-                if(trioValue.length !== pairValue.length){
+                //pairs with the same amount of trios，
+                //amount of trios more than 2 
+                if(trioValue.length !== pairValue.length
+                    && trioValue.length >= 2 ){
                     return false;
                 }
 
@@ -356,8 +342,7 @@ export function getCategory(fromHand){
                 }
 
                 // trio part can't greater than A(14),singles no matter
-                if(trioValue.length >= 2 && trioValue[0]>=3
-                    &&trioValue[trioValue.length-1]<=14){
+                if(trioValue[0]>=3 && trioValue[trioValue.length-1]<=14){
                         return {
                             CategoryType:"TrioChainWithPairs",
                             weight:1,
